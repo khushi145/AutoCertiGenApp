@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">AutoGenerateCertificates</string>
+    <string name="certigen">CertiGen</string>
+    <string name="tag_certigen">Generating thousands of certificates in just one click</string>
+    <string name="upload_textView">Open a File</string>
+    <string name="browse">BROWSE</string>
+    <string name="sheets_cntnt_dscptn">sheets file icon</string>
+    <string name="template_img_cd">Template Image</string>
+    <string name="entries_hint">Enter number of Certificates</string>
+    <string name="enter_row_num">Number of Certificates</string>
+    <string name="select_a_template">Select a Template</string>
+    <string name="signatory_name">Signatory Name</string>
+    <string name="enter_signatory_name">Enter Signatory Name</string>
+    <string name="designation">Designation</string>
+    <string name="enter_designation">Enter Designation</string>
+    <string name="additional_details">Additional Details</string>
+    <string name="generate">Generate</string>
+    <string name="go_to_templates">Go to Certificates</string>
+
+</resources>
