@@ -38,10 +38,10 @@ public class TemplateActivity extends AppCompatActivity {
 
     TextView test;
     String[][] exceldata = new String[30][30];
-    int name,college,course,position,society;
+    int name,college,course,position,society,competition,date,year;
     int row_num;
     Button go_to;
-    String path;
+    String path,template,signatory1,signatory2,designation1,designation2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,24 +49,37 @@ public class TemplateActivity extends AppCompatActivity {
         setContentView(R.layout.activity_template);
 
         path = getIntent().getStringExtra("path");
-
-        test = (TextView) findViewById(R.id.test);
-        go_to = findViewById( R.id.generate_btn );
+        template=getIntent().getStringExtra("template");
+        signatory1=getIntent().getStringExtra("signatory1");
+        signatory2=getIntent().getStringExtra("signatory2");
+        designation1=getIntent().getStringExtra("designation1");
+        designation2=getIntent().getStringExtra("designation2");
 
         try {
             row_num = Integer.parseInt(getIntent().getStringExtra("entries"));
         }catch (NullPointerException e){
             e.printStackTrace();
         }
-        readExcelData();
-        test.setText("Certificate Generation Completed!");
 
-        /*go_to.setOnClickListener( new View.OnClickListener() {
+        switch(template){
+            case "t1":
+                readExcelData1();
+                break;
+            case "t2":
+                readExcelData2();
+                break;
+            default:Toast.makeText(getApplicationContext(),"Error in template selection",Toast.LENGTH_SHORT).show();
+        }
+
+        test = (TextView) findViewById(R.id.test);
+        go_to = findViewById( R.id.generate_btn );
+        /*
+        go_to.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Uri selectedUri = Uri.parse( getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).toString() );
+                Uri selectedUri = Uri.parse("file://"+Environment.DIRECTORY_DOWNLOADS+"/AutoCertiGen/");
                 Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setDataAndType(selectedUri, "resource/folder");
+                i.setDataAndType(selectedUri, "application/*");
 
                 if (i.resolveActivityInfo(getPackageManager(), 0) != null)
                 {
@@ -79,52 +92,48 @@ public class TemplateActivity extends AppCompatActivity {
                     // explorer app installed on your device
                 }
             }
-        } );
-         */
+        } );*/
     }
 
-    public void readExcelData() {
-        new Thread(() -> {
-            try {
-                InputStream inputfile = getContentResolver().openInputStream(Uri.parse(path));
-                XSSFWorkbook workbook = new XSSFWorkbook(inputfile);
-                XSSFSheet sheet = workbook.getSheetAt(0);
-                Iterator<Row> rowIterator = sheet.iterator();
-                int count = 0;
-                String temp;
-                while (rowIterator.hasNext() && count < row_num+1) {
-                    Row row = rowIterator.next();
-                    Iterator<Cell> cx = row.cellIterator();
-                    for (int i=0; i<5; i++){
-                        temp=cx.next().getStringCellValue();
-                        exceldata[count][i]=temp;
-                    }
-                    count++;
+    public void readExcelData1() {
+        try {
+            InputStream inputfile = getContentResolver().openInputStream(Uri.parse(path));
+            XSSFWorkbook workbook = new XSSFWorkbook(inputfile);
+            XSSFSheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> rowIterator = sheet.iterator();
+            int count = 0;
+            String temp;
+            while (rowIterator.hasNext() && count < row_num+1) {
+                Row row = rowIterator.next();
+                Iterator<Cell> cx = row.cellIterator();
+                for (int i=0; i<5; i++){
+                    temp=cx.next().getStringCellValue();
+                    exceldata[count][i]=temp;
                 }
-
-                inputfile.close();
-                identifyColumn();
-                genPDF();
-            } catch (FileNotFoundException e) {
-                test.setText("FilenotFound");
-                e.printStackTrace();
-            } catch (IOException e) {
-                test.setText("IOException");
-                e.printStackTrace();
+                count++;
             }
-        }).start();
+            inputfile.close();
+            identifyColumn1();
+            genPDF1();
+        } catch (FileNotFoundException e) {
+            test.setText("FilenotFound");
+            e.printStackTrace();
+        } catch (IOException e) {
+            test.setText("IOException");
+            e.printStackTrace();
+        }
     }
 
-    public void identifyColumn(){
+    public void identifyColumn1(){
         for (int i=0; i<5; i++){
             if(exceldata[0][i].toLowerCase().equals("name")){
                 name=i;
             }
-            else if(exceldata[0][i].toLowerCase().equals("college")){
-                college=i;
+            else if(exceldata[0][i].toLowerCase().equals("date")){
+                date=i;
             }
-            else if(exceldata[0][i].toLowerCase().equals("course")){
-                course=i;
+            else if(exceldata[0][i].toLowerCase().equals("competition")){
+                competition=i;
             }
             else if(exceldata[0][i].toLowerCase().equals("position")){
                 position=i;
@@ -133,43 +142,205 @@ public class TemplateActivity extends AppCompatActivity {
                 society=i;
             }
             else{
+                Toast.makeText(getApplicationContext(),"Columns of the excelsheet don't match the Template placeholders. Please upload another excel file",Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private void genPDF1() {
+        try {
+            PDFBoxResourceLoader.init(getApplicationContext());
+            AssetManager assetManager = getAssets();
+            for (int i=1; i<row_num+1; i++){
+                InputStream is = assetManager.open("t1.pdf");
+                OutputStream newPDFfile = createFile(exceldata[i][name]);
+                copy(is, newPDFfile);
+                File PDFfile = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)+"/AutoCertiGen/"+exceldata[i][name]+".pdf");
+                PDDocument pdf = PDDocument.load(PDFfile);
+                PDPage page = pdf.getPage(0);
+                PDPageContentStream contentStream = new PDPageContentStream(pdf, page,true,false);
+                contentStream.beginText();
+                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
+                contentStream.setFont(PDType1Font.TIMES_BOLD, 150);
+                contentStream.newLineAtOffset(1330, -1300);
+                contentStream.showText(exceldata[i][name]);
+                contentStream.endText();
+                contentStream.beginText();
+                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
+                contentStream.setFont(PDType1Font.TIMES_ROMAN, 100);
+                contentStream.newLineAtOffset(600, -1500);
+                contentStream.showText("for securing "+exceldata[i][position]+" place in the competition-"+exceldata[i][competition]);
+                contentStream.endText();
+                contentStream.beginText();
+                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
+                contentStream.setFont(PDType1Font.TIMES_ROMAN, 100);
+                contentStream.newLineAtOffset(1000, -1620);
+                contentStream.showText("organized by the society: "+exceldata[i][society]);
+                contentStream.endText();
+                contentStream.beginText();
+                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
+                contentStream.setFont(PDType1Font.TIMES_ROMAN, 100);
+                contentStream.newLineAtOffset(550, -1740);
+                contentStream.showText("under the aegis of the Annual Cultural Festival -Karvaan'21-");
+                contentStream.endText();
+                contentStream.beginText();
+                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
+                contentStream.setFont(PDType1Font.TIMES_ROMAN, 100);
+                contentStream.newLineAtOffset(1300, -1860);
+                contentStream.showText("held on "+exceldata[i][date]+".");
+                contentStream.endText();
+                contentStream.beginText();
+                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
+                contentStream.setFont(PDType1Font.TIMES_ROMAN, 90);
+                contentStream.newLineAtOffset(400, -2200);
+                contentStream.showText(signatory1);
+                contentStream.endText();
+                contentStream.beginText();
+                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
+                contentStream.setFont(PDType1Font.TIMES_ROMAN, 90);
+                contentStream.newLineAtOffset(2500, -2200);
+                contentStream.showText(signatory2);
+                contentStream.endText();
+                contentStream.beginText();
+                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
+                contentStream.setFont(PDType1Font.TIMES_ROMAN, 90);
+                contentStream.newLineAtOffset(400, -2300);
+                contentStream.showText(designation1);
+                contentStream.endText();
+                contentStream.beginText();
+                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
+                contentStream.setFont(PDType1Font.TIMES_ROMAN, 90);
+                contentStream.newLineAtOffset(2500, -2300);
+                contentStream.showText(designation2);
+                contentStream.endText();
+                contentStream.close();
+                pdf.save(PDFfile);
+                pdf.close();
+                newPDFfile.close();
+                is.close();
+            }
+            test.setText("Certificate Generation Completed!");
+            Log.d("TemplateActivity", "Completed");
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void readExcelData2() {
+        try {
+            InputStream inputfile = getContentResolver().openInputStream(Uri.parse(path));
+            XSSFWorkbook workbook = new XSSFWorkbook(inputfile);
+            XSSFSheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> rowIterator = sheet.iterator();
+            int count = 0;
+            String temp;
+            while (rowIterator.hasNext() && count < row_num+1) {
+                Row row = rowIterator.next();
+                Iterator<Cell> cx = row.cellIterator();
+                for (int i=0; i<5; i++){
+                    temp=cx.next().getStringCellValue();
+                    exceldata[count][i]=temp;
+                }
+                count++;
+            }
+
+            inputfile.close();
+            identifyColumn2();
+            genPDF2();
+        } catch (FileNotFoundException e) {
+            test.setText("FilenotFound");
+            e.printStackTrace();
+        } catch (IOException e) {
+            test.setText("IOException");
+            e.printStackTrace();
+        }
+    }
+
+    public void identifyColumn2(){
+        for (int i=0; i<5; i++){
+            if(exceldata[0][i].toLowerCase().equals("name")){
+                name=i;
+            }
+            else if(exceldata[0][i].toLowerCase().equals("year")){
+                year=i;
+            }
+            else if(exceldata[0][i].toLowerCase().equals("course")){
+                course=i;
+            }
+            else if(exceldata[0][i].toLowerCase().equals("position")){
+                position=i;
+            }
+            else if(exceldata[0][i].toLowerCase().equals("date")){
+                date=i;
+            }
+            else{
                 //add toast here for error msg ("column name don't match template
                 // add another excel sheet")
             }
         }
     }
 
-    private void genPDF() {
+    private void genPDF2() {
         try {
             PDFBoxResourceLoader.init(getApplicationContext());
             AssetManager assManager = getAssets();
 
             for (int i=1; i<row_num+1; i++){
-                InputStream is = assManager.open("template1.pdf");
+                InputStream is = assManager.open("t2.pdf");
                 OutputStream newPDFfile = createFile(exceldata[i][name]);
                 copy(is, newPDFfile);
-                File PDFfile = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)+exceldata[i][name]+".pdf");
+                File PDFfile = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)+"/AutoCertiGen/"+exceldata[i][name]+".pdf");
                 PDDocument pdf = PDDocument.load(PDFfile);
 
                 PDPage page = pdf.getPage(0);
                 PDPageContentStream contentStream = new PDPageContentStream(pdf, page,true,false);
                 contentStream.beginText();
                 contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
-                contentStream.setFont(PDType1Font.TIMES_BOLD, 150);
-                contentStream.newLineAtOffset(1400, -1200);
-                contentStream.showText(exceldata[i][name]);
+                contentStream.setFont(PDType1Font.TIMES_BOLD, 100);
+                contentStream.newLineAtOffset(900, -1300);
+                contentStream.showText("This is to certify that Ms. "+exceldata[i][name]);
                 contentStream.endText();
                 contentStream.beginText();
                 contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
-                contentStream.setFont(PDType1Font.TIMES_ROMAN, 120);
-                contentStream.newLineAtOffset(1150, -1400);
-                contentStream.showText("from "+exceldata[i][college]+" has secured");
+                contentStream.setFont(PDType1Font.TIMES_ROMAN, 100);
+                contentStream.newLineAtOffset(900, -1420);
+                contentStream.showText("of "+exceldata[i][course]+" "+exceldata[i][year]+" year has secured");
                 contentStream.endText();
                 contentStream.beginText();
                 contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
-                contentStream.setFont(PDType1Font.TIMES_ROMAN, 120);
-                contentStream.newLineAtOffset(1150, -1520);
-                contentStream.showText(exceldata[i][position]+" position in "+exceldata[i][society]+".");
+                contentStream.setFont(PDType1Font.TIMES_ROMAN, 100);
+                contentStream.newLineAtOffset(900, -1540);
+                contentStream.showText(exceldata[i][position]+" position in the academic session 2020-2021.");
+                contentStream.endText();
+                contentStream.beginText();
+                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
+                contentStream.setFont(PDType1Font.TIMES_ROMAN, 100);
+                contentStream.newLineAtOffset(1200, -1760);
+                contentStream.showText("Presented this on: "+exceldata[i][date]);
+                contentStream.endText();
+                contentStream.beginText();
+                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
+                contentStream.setFont(PDType1Font.TIMES_ROMAN, 90);
+                contentStream.newLineAtOffset(400, -2200);
+                contentStream.showText(signatory1);
+                contentStream.endText();
+                contentStream.beginText();
+                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
+                contentStream.setFont(PDType1Font.TIMES_ROMAN, 90);
+                contentStream.newLineAtOffset(2500, -2200);
+                contentStream.showText(signatory2);
+                contentStream.endText();
+                contentStream.beginText();
+                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
+                contentStream.setFont(PDType1Font.TIMES_ROMAN, 90);
+                contentStream.newLineAtOffset(400, -2300);
+                contentStream.showText(designation1);
+                contentStream.endText();
+                contentStream.beginText();
+                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
+                contentStream.setFont(PDType1Font.TIMES_ROMAN, 90);
+                contentStream.newLineAtOffset(2500, -2300);
+                contentStream.showText(designation2);
                 contentStream.endText();
                 contentStream.close();
                 pdf.save(PDFfile);

@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,7 +19,6 @@ public class AdditionalInfo extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate( savedInstanceState );
         setContentView( R.layout.activity_additional_info );
-
         signatory1 = findViewById( R.id.edit_signatory1 );
         designation1 = findViewById( R.id.edit_designation1 );
         signatory2 = findViewById( R.id.edit_signatory2 );
@@ -28,16 +28,11 @@ public class AdditionalInfo extends AppCompatActivity {
         generate.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 if(TextUtils.isEmpty(signatory1.getText()) && TextUtils.isEmpty(signatory2.getText()) && TextUtils.isEmpty(designation1.getText()) && TextUtils.isEmpty(designation2.getText()))
                 {
                     Toast.makeText( getApplicationContext(), "Fields are Empty!",  Toast.LENGTH_SHORT).show();
-                    /*signatory1.setError(" Please Enter Signatory Name ");
-                    signatory2.setError(" Please Enter Signatory Name ");
-                    designation1.setError(" Please Enter Designation ");
-                    designation2.setError(" Please Enter Designation ");*/
 
-                } else if (TextUtils.isEmpty(signatory1.getText())) {
+                } else if (TextUtils.isEmpty(signatory1.getText()) ) {
                     //proceed with operation
                     signatory1.setError(" Please Enter Signatory Name ");
                     signatory1.requestFocus();
@@ -50,10 +45,12 @@ public class AdditionalInfo extends AppCompatActivity {
                 } else if (TextUtils.isEmpty(designation2.getText())) {
                     designation2.setError( "Please Enter Designation Name " );
                     designation2.requestFocus();
-                } else {
-
-                    Intent i = new Intent(AdditionalInfo.this, TemplateActivity.class);
-
+                }
+                else if(isInvalidInput()){
+                    Toast.makeText( getApplicationContext(), "Re-enter the fields!",  Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    Intent i = new Intent(getApplicationContext(), TemplateActivity.class);
                     i.putExtra( "path", getIntent().getStringExtra( "path" ) );
                     i.putExtra( "entries", getIntent().getStringExtra( "entries" ) );
                     i.putExtra( "template", getIntent().getStringExtra( "template" ) );
@@ -66,5 +63,25 @@ public class AdditionalInfo extends AppCompatActivity {
             }
         } );
 
+    }
+    public boolean isInvalidInput(){
+        boolean flag=false;
+        if (TextUtils.isDigitsOnly( signatory1.getText())) {
+            signatory1.setError("Invalid Input: Input can't contain digits only");
+            flag=true;
+        }
+        if (TextUtils.isDigitsOnly( designation1.getText() )) {
+            signatory2.setError("Invalid Input: Input can't contain digits only");
+            flag=true;
+        }
+        if (TextUtils.isDigitsOnly( signatory2.getText() )) {
+            designation1.setError("Invalid Input: Input can't contain digits only");
+            flag=true;
+        }
+        if (TextUtils.isDigitsOnly( designation2.getText() )) {
+            designation2.setError("Invalid Input: Input can't contain digits only");
+            flag=true;
+        }
+        return flag;
     }
 }
