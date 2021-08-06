@@ -23,7 +23,7 @@ public class AdditionalInfo extends AppCompatActivity {
         designation1 = findViewById( R.id.edit_designation1 );
         signatory2 = findViewById( R.id.edit_signatory2 );
         designation2 = findViewById( R.id.edit_designation2 );
-        generate = findViewById( R.id.generate_btn );
+        generate = (Button)findViewById( R.id.generate_btn );
 
         generate.setOnClickListener( new View.OnClickListener() {
             @Override
