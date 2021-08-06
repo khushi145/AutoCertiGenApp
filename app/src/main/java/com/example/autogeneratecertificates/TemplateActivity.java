@@ -36,9 +36,9 @@ import java.util.Iterator;
 
 public class TemplateActivity extends AppCompatActivity {
 
-    TextView test;
+    TextView success,displayPath;
     String[][] exceldata = new String[30][30];
-    int name,college,course,position,society,competition,date,year;
+    int name,course,position,society,competition,date,year;
     int row_num;
     Button go_to;
     String path,template,signatory1,signatory2,designation1,designation2;
@@ -60,6 +60,9 @@ public class TemplateActivity extends AppCompatActivity {
         }catch (NullPointerException e){
             e.printStackTrace();
         }
+        success = (TextView) findViewById(R.id.success);
+        displayPath=(TextView)findViewById(R.id.pdfLoc);
+        go_to = (Button) findViewById( R.id.goto_btn );
 
         switch(template){
             case "t1":
@@ -71,19 +74,16 @@ public class TemplateActivity extends AppCompatActivity {
             default:Toast.makeText(getApplicationContext(),"Error in template selection",Toast.LENGTH_SHORT).show();
         }
 
-        test = (TextView) findViewById(R.id.test);
-        go_to = findViewById( R.id.generate_btn );
-        /*
         go_to.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Uri selectedUri = Uri.parse("file://"+Environment.DIRECTORY_DOWNLOADS+"/AutoCertiGen/");
+                Uri selectedUri = Uri.parse(getExternalFilesDir(Environment.DIRECTORY_PICTURES).getPath());
                 Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setDataAndType(selectedUri, "application/*");
+                i.setDataAndType(selectedUri,"*/*");
 
-                if (i.resolveActivityInfo(getPackageManager(), 0) != null)
+                if (i.resolveActivityInfo(getPackageManager(),0)!=null)
                 {
-                    startActivity(i);
+                    startActivity(Intent.createChooser(i,"Choose"));
                 }
                 else
                 {
@@ -92,36 +92,34 @@ public class TemplateActivity extends AppCompatActivity {
                     // explorer app installed on your device
                 }
             }
-        } );*/
+        } );
     }
 
     public void readExcelData1() {
-        try {
-            InputStream inputfile = getContentResolver().openInputStream(Uri.parse(path));
-            XSSFWorkbook workbook = new XSSFWorkbook(inputfile);
-            XSSFSheet sheet = workbook.getSheetAt(0);
-            Iterator<Row> rowIterator = sheet.iterator();
-            int count = 0;
-            String temp;
-            while (rowIterator.hasNext() && count < row_num+1) {
-                Row row = rowIterator.next();
-                Iterator<Cell> cx = row.cellIterator();
-                for (int i=0; i<5; i++){
-                    temp=cx.next().getStringCellValue();
-                    exceldata[count][i]=temp;
-                }
-                count++;
-            }
-            inputfile.close();
-            identifyColumn1();
-            genPDF1();
-        } catch (FileNotFoundException e) {
-            test.setText("FilenotFound");
-            e.printStackTrace();
-        } catch (IOException e) {
-            test.setText("IOException");
-            e.printStackTrace();
-        }
+       try {
+           InputStream inputfile = getContentResolver().openInputStream(Uri.parse(path));
+           XSSFWorkbook workbook = new XSSFWorkbook(inputfile);
+           XSSFSheet sheet = workbook.getSheetAt(0);
+           Iterator<Row> rowIterator = sheet.iterator();
+           int count = 0;
+           String temp;
+           while (rowIterator.hasNext() && count < row_num+1) {
+               Row row = rowIterator.next();
+               Iterator<Cell> cx = row.cellIterator();
+               for (int i=0; i<5; i++){
+                   temp=cx.next().getStringCellValue();
+                   exceldata[count][i]=temp;
+               }
+               count++;
+           }
+           inputfile.close();
+           identifyColumn1();
+           genPDF1();
+       } catch (FileNotFoundException e) {
+           e.printStackTrace();
+       } catch (IOException e) {
+           e.printStackTrace();
+       }
     }
 
     public void identifyColumn1(){
@@ -156,6 +154,8 @@ public class TemplateActivity extends AppCompatActivity {
                 OutputStream newPDFfile = createFile(exceldata[i][name]);
                 copy(is, newPDFfile);
                 File PDFfile = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)+"/AutoCertiGen/"+exceldata[i][name]+".pdf");
+                Log.d("PATH",PDFfile.getAbsolutePath());
+                Log.d("PATH",PDFfile.getPath());
                 PDDocument pdf = PDDocument.load(PDFfile);
                 PDPage page = pdf.getPage(0);
                 PDPageContentStream contentStream = new PDPageContentStream(pdf, page,true,false);
@@ -219,8 +219,10 @@ public class TemplateActivity extends AppCompatActivity {
                 newPDFfile.close();
                 is.close();
             }
-            test.setText("Certificate Generation Completed!");
-            Log.d("TemplateActivity", "Completed");
+            success.setText("Certificate Generation Completed!");
+            displayPath.setText("The files are located at the following location in Internal Storage:\n" +
+                    getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()+"/AutoCertiGen/");
+
         }catch (IOException e) {
             e.printStackTrace();
         }
@@ -234,12 +236,12 @@ public class TemplateActivity extends AppCompatActivity {
             Iterator<Row> rowIterator = sheet.iterator();
             int count = 0;
             String temp;
-            while (rowIterator.hasNext() && count < row_num+1) {
+            while (rowIterator.hasNext() && count < row_num + 1) {
                 Row row = rowIterator.next();
                 Iterator<Cell> cx = row.cellIterator();
-                for (int i=0; i<5; i++){
-                    temp=cx.next().getStringCellValue();
-                    exceldata[count][i]=temp;
+                for (int i = 0; i < 5; i++) {
+                    temp = cx.next().getStringCellValue();
+                    exceldata[count][i] = temp;
                 }
                 count++;
             }
@@ -248,10 +250,8 @@ public class TemplateActivity extends AppCompatActivity {
             identifyColumn2();
             genPDF2();
         } catch (FileNotFoundException e) {
-            test.setText("FilenotFound");
             e.printStackTrace();
         } catch (IOException e) {
-            test.setText("IOException");
             e.printStackTrace();
         }
     }
@@ -348,8 +348,9 @@ public class TemplateActivity extends AppCompatActivity {
                 newPDFfile.close();
                 is.close();
             }
-
-            Log.d("TemplateActivity", "Completed");
+            success.setText("Certificate Generation Completed!");
+            displayPath.setText("The files are located at the following location in Internal Storage:\n" +
+                    getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()+"/AutoCertiGen/");
         }catch (IOException e) {
             e.printStackTrace();
         }
