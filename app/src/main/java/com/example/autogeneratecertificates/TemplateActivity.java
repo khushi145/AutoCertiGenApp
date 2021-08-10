@@ -221,7 +221,7 @@ public class TemplateActivity extends AppCompatActivity {
             }
             success.setText("Certificate Generation Completed!");
             displayPath.setText("The files are located at the following location in Internal Storage:\n" +
-                    getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()+"/AutoCertiGen/");
+                   "Android/data/com.example.autogeneratecertificates/files/Download/AutoCertiGen/");
 
         }catch (IOException e) {
             e.printStackTrace();

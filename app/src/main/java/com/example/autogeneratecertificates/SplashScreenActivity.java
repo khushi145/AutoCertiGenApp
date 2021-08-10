@@ -31,16 +31,11 @@ public class SplashScreenActivity extends AppCompatActivity {
                 .withFullScreen()
                 .withTargetActivity( MainActivity.class )
                 .withSplashTimeOut( 2000 )
-                .withBackgroundResource(R.drawable.splash_launcher_background)
+                .withBackgroundResource(R.drawable.splash2)
                 .withHeaderText( "" )
-                .withFooterText( "Copyright 2021" )
-                .withBeforeLogoText( "" )
-                .withAfterLogoText( "CertiGen" )
-                .withLogo( R.mipmap.ic_launcher_round );
+                .withFooterText( "Copyright 2021" );
 
         config.getHeaderTextView().setTextColor( Color.BLACK );
-        config.getAfterLogoTextView().setTextColor( Color.WHITE );
-        config.getBeforeLogoTextView().setTextColor( Color.BLUE );
         config.getFooterTextView().setTextColor( Color.WHITE );
 
         View splashscreen = config.create();
