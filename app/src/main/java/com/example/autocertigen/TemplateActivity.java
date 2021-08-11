@@ -1,4 +1,4 @@
-package com.example.autogeneratecertificates;
+package com.example.autocertigen;
 
 import android.content.Intent;
 import android.content.res.AssetManager;
@@ -151,9 +151,9 @@ public class TemplateActivity extends AppCompatActivity {
             AssetManager assetManager = getAssets();
             for (int i=1; i<row_num+1; i++){
                 InputStream is = assetManager.open("t1.pdf");
-                OutputStream newPDFfile = createFile(exceldata[i][name]);
+                OutputStream newPDFfile = createFile(exceldata[i][name],i);
                 copy(is, newPDFfile);
-                File PDFfile = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)+"/AutoCertiGen/"+exceldata[i][name]+".pdf");
+                File PDFfile = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)+"/AutoCertiGen/"+i+"_"+exceldata[i][name]+".pdf");
                 Log.d("PATH",PDFfile.getAbsolutePath());
                 Log.d("PATH",PDFfile.getPath());
                 PDDocument pdf = PDDocument.load(PDFfile);
@@ -198,7 +198,7 @@ public class TemplateActivity extends AppCompatActivity {
                 contentStream.beginText();
                 contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_ROMAN, 90);
-                contentStream.newLineAtOffset(2500, -2200);
+                contentStream.newLineAtOffset(2380, -2200);
                 contentStream.showText(signatory2);
                 contentStream.endText();
                 contentStream.beginText();
@@ -210,7 +210,7 @@ public class TemplateActivity extends AppCompatActivity {
                 contentStream.beginText();
                 contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_ROMAN, 90);
-                contentStream.newLineAtOffset(2500, -2300);
+                contentStream.newLineAtOffset(2380, -2300);
                 contentStream.showText(designation2);
                 contentStream.endText();
                 contentStream.close();
@@ -287,9 +287,9 @@ public class TemplateActivity extends AppCompatActivity {
 
             for (int i=1; i<row_num+1; i++){
                 InputStream is = assManager.open("t2.pdf");
-                OutputStream newPDFfile = createFile(exceldata[i][name]);
+                OutputStream newPDFfile = createFile(exceldata[i][name],i);
                 copy(is, newPDFfile);
-                File PDFfile = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)+"/AutoCertiGen/"+exceldata[i][name]+".pdf");
+                File PDFfile = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)+"/AutoCertiGen/"+i+"_"+exceldata[i][name]+".pdf");
                 PDDocument pdf = PDDocument.load(PDFfile);
 
                 PDPage page = pdf.getPage(0);
@@ -350,14 +350,14 @@ public class TemplateActivity extends AppCompatActivity {
             }
             success.setText("Certificate Generation Completed!");
             displayPath.setText("The files are located at the following location in Internal Storage:\n" +
-                    getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()+"/AutoCertiGen/");
+                    "Android/data/com.example.autogeneratecertificates/files/Download/AutoCertiGen/");
         }catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private OutputStream createFile(String name) throws IOException {
-        File f = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)+"/AutoCertiGen/" +name+".pdf");
+    private OutputStream createFile(String name,int i) throws IOException {
+        File f = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)+"/AutoCertiGen/" +i+"_"+name+".pdf");
         if (f.exists()){
             f.delete();
         }
