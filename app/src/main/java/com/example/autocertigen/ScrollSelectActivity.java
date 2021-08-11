@@ -1,11 +1,10 @@
-package com.example.autogeneratecertificates;
+package com.example.autocertigen;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 
 public class ScrollSelectActivity extends AppCompatActivity {

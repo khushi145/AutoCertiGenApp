@@ -1,4 +1,4 @@
-package com.example.autogeneratecertificates;
+package com.example.autocertigen;
 
 import android.app.Application;
 

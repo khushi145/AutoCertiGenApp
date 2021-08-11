@@ -1,4 +1,4 @@
-package com.example.autogeneratecertificates;
+package com.example.autocertigen;
 
 import android.graphics.Color;
 import android.os.Bundle;
