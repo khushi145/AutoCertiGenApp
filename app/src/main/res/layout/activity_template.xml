@@ -44,6 +44,7 @@
         android:layout_marginRight="136dp"
         android:layout_marginBottom="192dp"
         android:textColor="@color/pink_1"
+        android:text="LOADING..."
         android:textSize="30sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/goto_btn"
