@@ -1,5 +1,6 @@
 package com.example.autocertigen;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.net.Uri;
@@ -43,36 +44,41 @@ public class TemplateActivity extends AppCompatActivity {
     Button go_to;
     String path,template,signatory1,signatory2,designation1,designation2;
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_template);
 
-        path = getIntent().getStringExtra("path");
-        template=getIntent().getStringExtra("template");
-        signatory1=getIntent().getStringExtra("signatory1");
-        signatory2=getIntent().getStringExtra("signatory2");
-        designation1=getIntent().getStringExtra("designation1");
-        designation2=getIntent().getStringExtra("designation2");
-
-        try {
-            row_num = Integer.parseInt(getIntent().getStringExtra("entries"));
-        }catch (NullPointerException e){
-            e.printStackTrace();
-        }
         success = (TextView) findViewById(R.id.success);
         displayPath=(TextView)findViewById(R.id.pdfLoc);
         go_to = (Button) findViewById( R.id.goto_btn );
 
-        switch(template){
-            case "t1":
-                readExcelData1();
-                break;
-            case "t2":
-                readExcelData2();
-                break;
-            default:Toast.makeText(getApplicationContext(),"Error in template selection",Toast.LENGTH_SHORT).show();
-        }
+        new Thread(()->{
+            path = getIntent().getStringExtra("path");
+            template = getIntent().getStringExtra("template");
+            signatory1 = getIntent().getStringExtra("signatory1");
+            signatory2 = getIntent().getStringExtra("signatory2");
+            designation1 = getIntent().getStringExtra("designation1");
+            designation2 = getIntent().getStringExtra("designation2");
+
+            try {
+                row_num = Integer.parseInt(getIntent().getStringExtra("entries"));
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
+
+            switch (template) {
+                case "t1":
+                    readExcelData1();
+                    break;
+                case "t2":
+                    readExcelData2();
+                    break;
+                default:
+                    Toast.makeText(getApplicationContext(), "Error in template selection", Toast.LENGTH_SHORT).show();
+            }
+        }).start();
 
         go_to.setOnClickListener( new View.OnClickListener() {
             @Override
@@ -145,6 +151,7 @@ public class TemplateActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private void genPDF1() {
         try {
             PDFBoxResourceLoader.init(getApplicationContext());
@@ -221,8 +228,7 @@ public class TemplateActivity extends AppCompatActivity {
             }
             success.setText("Certificate Generation Completed!");
             displayPath.setText("The files are located at the following location in Internal Storage:\n" +
-                   "Android/data/com.example.autogeneratecertificates/files/Download/AutoCertiGen/");
-
+                    "Android/data/com.example.autocertigen/files/Download/AutoCertiGen/");
         }catch (IOException e) {
             e.printStackTrace();
         }
@@ -280,6 +286,7 @@ public class TemplateActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private void genPDF2() {
         try {
             PDFBoxResourceLoader.init(getApplicationContext());
@@ -350,7 +357,7 @@ public class TemplateActivity extends AppCompatActivity {
             }
             success.setText("Certificate Generation Completed!");
             displayPath.setText("The files are located at the following location in Internal Storage:\n" +
-                    "Android/data/com.example.autogeneratecertificates/files/Download/AutoCertiGen/");
+                    "Android/data/com.example.autocertigen/files/Download/AutoCertiGen/");
         }catch (IOException e) {
             e.printStackTrace();
         }
