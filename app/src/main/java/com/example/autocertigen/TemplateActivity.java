@@ -37,7 +37,7 @@ import java.util.Iterator;
 public class TemplateActivity extends AppCompatActivity {
 
     TextView success,displayPath;
-    String[][] exceldata = new String[30][30];
+    String[][] exceldata = new String[2000][30];
     int name,course,position,society,competition,date,year;
     int row_num;
     Button go_to;
