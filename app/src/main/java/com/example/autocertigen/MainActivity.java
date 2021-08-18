@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
                 if (resultCode == RESULT_OK) {
                     path_xlsx = data.getData().toString();
                     Intent i = new Intent(getApplicationContext(), ScrollSelectActivity.class );
+                    Log.d("TAG-MAIN","pathExcel: "+path_xlsx);
                     i.putExtra("path", path_xlsx);
                     i.putExtra("entries",entries.getText().toString());
                     startActivity(i);

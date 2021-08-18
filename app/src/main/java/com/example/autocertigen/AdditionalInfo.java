@@ -1,10 +1,12 @@
 package com.example.autocertigen;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,7 +14,8 @@ import android.widget.Toast;
 
 public class AdditionalInfo extends AppCompatActivity {
     EditText signatory1, signatory2, designation1, designation2;
-    Button generate;
+    Button generate,signImage1, signImage2;
+    String path_image1, path_image2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +26,31 @@ public class AdditionalInfo extends AppCompatActivity {
         signatory2 = findViewById( R.id.edit_signatory2 );
         designation2 = findViewById( R.id.edit_designation2 );
         generate = (Button)findViewById( R.id.generate_btn );
+        signImage1=(Button)findViewById(R.id.signature1_button);
+        signImage2=(Button)findViewById(R.id.signature2_button);
+        path_image1=path_image2="NULL";
+
+        signImage1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i1 = new Intent(Intent.ACTION_GET_CONTENT);
+                String[] mimeTypes = {"image/jpeg" , "image/png"};
+                i1.setType("*/*");
+                i1.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+                startActivityForResult(i1, 1);
+            }
+        });
+
+        signImage2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i1 = new Intent(Intent.ACTION_GET_CONTENT);
+                String[] mimeTypes = {"image/jpeg" , "image/png"};
+                i1.setType("*/*");
+                i1.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+                startActivityForResult(i1, 2);
+            }
+        });
 
         generate.setOnClickListener( new View.OnClickListener() {
             @Override
@@ -49,6 +77,7 @@ public class AdditionalInfo extends AppCompatActivity {
                     Toast.makeText( getApplicationContext(), "Re-enter the fields!",  Toast.LENGTH_SHORT).show();
                 }
                 else {
+
                     Intent i = new Intent(getApplicationContext(), TemplateActivity.class);
                     i.putExtra( "path", getIntent().getStringExtra( "path" ) );
                     i.putExtra( "entries", getIntent().getStringExtra( "entries" ) );
@@ -57,6 +86,9 @@ public class AdditionalInfo extends AppCompatActivity {
                     i.putExtra( "designation1", designation1.getText().toString() );
                     i.putExtra( "signatory2", signatory2.getText().toString() );
                     i.putExtra( "designation2", designation2.getText().toString() );
+                    i.putExtra("sign1image",path_image1);
+                    i.putExtra("sign2image",path_image2);
+
                     startActivity( i );
                 }
             }
@@ -82,5 +114,25 @@ public class AdditionalInfo extends AppCompatActivity {
             flag=true;
         }
         return flag;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case 1:
+                if (resultCode == RESULT_OK) {
+                    path_image1 = data.getData().toString();
+                    Log.d("TAG","path1: "+path_image1);
+                }
+                break;
+            case 2:
+                if (resultCode == RESULT_OK) {
+                    path_image2 = data.getData().toString();
+                    Log.d("TAG","path2: "+path_image2);
+                }
+                break;
+
+        }
     }
 }
