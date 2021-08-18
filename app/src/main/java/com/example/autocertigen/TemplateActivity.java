@@ -1,8 +1,11 @@
 package com.example.autocertigen;
 
 import android.annotation.SuppressLint;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -18,6 +21,8 @@ import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
 import com.tom_roush.pdfbox.pdmodel.font.PDType1Font;
+import com.tom_roush.pdfbox.pdmodel.graphics.image.LosslessFactory;
+import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
@@ -42,7 +47,7 @@ public class TemplateActivity extends AppCompatActivity {
     int name,course,position,society,competition,date,year;
     int row_num;
     Button go_to;
-    String path,template,signatory1,signatory2,designation1,designation2;
+    String path,template,signatory1,signatory2,designation1,designation2,sign1Image,sign2Image;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -61,6 +66,11 @@ public class TemplateActivity extends AppCompatActivity {
             signatory2 = getIntent().getStringExtra("signatory2");
             designation1 = getIntent().getStringExtra("designation1");
             designation2 = getIntent().getStringExtra("designation2");
+            sign1Image=getIntent().getStringExtra("sign1image");
+            sign2Image=getIntent().getStringExtra("sign2image");
+
+            Log.d("TAG-TEMPLATE","path1: "+sign1Image);
+            Log.d("TAG-TEMPLATE","path2: "+sign2Image);
 
             try {
                 row_num = Integer.parseInt(getIntent().getStringExtra("entries"));
@@ -166,60 +176,64 @@ public class TemplateActivity extends AppCompatActivity {
                 PDDocument pdf = PDDocument.load(PDFfile);
                 PDPage page = pdf.getPage(0);
                 PDPageContentStream contentStream = new PDPageContentStream(pdf, page,true,false);
+                contentStream.transform(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.beginText();
-                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_BOLD, 150);
                 contentStream.newLineAtOffset(1330, -1300);
                 contentStream.showText(exceldata[i][name]);
                 contentStream.endText();
                 contentStream.beginText();
-                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_ROMAN, 100);
                 contentStream.newLineAtOffset(600, -1500);
                 contentStream.showText("for securing "+exceldata[i][position]+" place in the competition-"+exceldata[i][competition]);
                 contentStream.endText();
                 contentStream.beginText();
-                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_ROMAN, 100);
                 contentStream.newLineAtOffset(1000, -1620);
                 contentStream.showText("organized by the society: "+exceldata[i][society]);
                 contentStream.endText();
                 contentStream.beginText();
-                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_ROMAN, 100);
                 contentStream.newLineAtOffset(550, -1740);
                 contentStream.showText("under the aegis of the Annual Cultural Festival -Karvaan'21-");
                 contentStream.endText();
                 contentStream.beginText();
-                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_ROMAN, 100);
                 contentStream.newLineAtOffset(1300, -1860);
                 contentStream.showText("held on "+exceldata[i][date]+".");
                 contentStream.endText();
                 contentStream.beginText();
-                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_ROMAN, 90);
                 contentStream.newLineAtOffset(400, -2200);
                 contentStream.showText(signatory1);
                 contentStream.endText();
                 contentStream.beginText();
-                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_ROMAN, 90);
                 contentStream.newLineAtOffset(2380, -2200);
                 contentStream.showText(signatory2);
                 contentStream.endText();
                 contentStream.beginText();
-                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_ROMAN, 90);
                 contentStream.newLineAtOffset(400, -2300);
                 contentStream.showText(designation1);
                 contentStream.endText();
                 contentStream.beginText();
-                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_ROMAN, 90);
                 contentStream.newLineAtOffset(2380, -2300);
                 contentStream.showText(designation2);
                 contentStream.endText();
+                if(!sign1Image.equals("NULL")) {
+                    InputStream ims1 = getContentResolver().openInputStream(Uri.parse(sign1Image));
+                    PDImageXObject pdImage1= LosslessFactory.createFromImage(pdf,BitmapFactory.decodeStream(ims1));
+                    contentStream.drawImage(pdImage1,400,-2100,450,250);
+                    ims1.close();
+                }
+                if(!sign2Image.equals("NULL")) {
+                    InputStream ims2 = getContentResolver().openInputStream(Uri.parse(sign2Image));
+                    PDImageXObject pdImage2= LosslessFactory.createFromImage(pdf,BitmapFactory.decodeStream(ims2));
+                    contentStream.drawImage(pdImage2, 2450, -2100, 450, 250);
+                    ims2.close();
+                }
                 contentStream.close();
                 pdf.save(PDFfile);
                 pdf.close();
@@ -301,54 +315,61 @@ public class TemplateActivity extends AppCompatActivity {
 
                 PDPage page = pdf.getPage(0);
                 PDPageContentStream contentStream = new PDPageContentStream(pdf, page,true,false);
+                contentStream.transform(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.beginText();
-                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_BOLD, 100);
                 contentStream.newLineAtOffset(900, -1300);
                 contentStream.showText("This is to certify that Ms. "+exceldata[i][name]);
                 contentStream.endText();
                 contentStream.beginText();
-                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_ROMAN, 100);
                 contentStream.newLineAtOffset(900, -1420);
                 contentStream.showText("of "+exceldata[i][course]+" "+exceldata[i][year]+" year has secured");
                 contentStream.endText();
                 contentStream.beginText();
-                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_ROMAN, 100);
                 contentStream.newLineAtOffset(900, -1540);
                 contentStream.showText(exceldata[i][position]+" position in the academic session 2020-2021.");
                 contentStream.endText();
                 contentStream.beginText();
-                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_ROMAN, 100);
                 contentStream.newLineAtOffset(1200, -1760);
                 contentStream.showText("Presented this on: "+exceldata[i][date]);
                 contentStream.endText();
                 contentStream.beginText();
-                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_ROMAN, 90);
                 contentStream.newLineAtOffset(400, -2200);
                 contentStream.showText(signatory1);
                 contentStream.endText();
                 contentStream.beginText();
-                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_ROMAN, 90);
                 contentStream.newLineAtOffset(2500, -2200);
                 contentStream.showText(signatory2);
                 contentStream.endText();
                 contentStream.beginText();
-                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_ROMAN, 90);
                 contentStream.newLineAtOffset(400, -2300);
                 contentStream.showText(designation1);
                 contentStream.endText();
                 contentStream.beginText();
-                contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.setFont(PDType1Font.TIMES_ROMAN, 90);
                 contentStream.newLineAtOffset(2500, -2300);
                 contentStream.showText(designation2);
                 contentStream.endText();
+
+                if(!sign1Image.equals("NULL")) {
+                    InputStream ims1 = getContentResolver().openInputStream(Uri.parse(sign1Image));
+                    PDImageXObject pdImage1= LosslessFactory.createFromImage(pdf,BitmapFactory.decodeStream(ims1));
+                    contentStream.drawImage(pdImage1,450,-2100,450,250);
+                    ims1.close();
+                }
+                if(!sign2Image.equals("NULL")) {
+                    InputStream ims2 = getContentResolver().openInputStream(Uri.parse(sign2Image));
+                    PDImageXObject pdImage2= LosslessFactory.createFromImage(pdf,BitmapFactory.decodeStream(ims2));
+                    contentStream.drawImage(pdImage2, 2450, -2100, 450, 250);
+                    ims2.close();
+                }
+
                 contentStream.close();
                 pdf.save(PDFfile);
                 pdf.close();

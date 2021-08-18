@@ -9,9 +9,9 @@
     <string name="enter_row_num">Number of Certificates</string>
     <string name="select_a_template">Select a Template</string>
     <string name="signatory_name">Signatory Name</string>
-    <string name="enter_signatory_name">Enter Signatory Name</string>
+    <string name="enter_signatory_name">Enter here</string>
     <string name="designation">Designation</string>
-    <string name="enter_designation">Enter Designation</string>
+    <string name="enter_designation">Enter here</string>
     <string name="additional_details">Additional Details</string>
     <string name="generate">Generate</string>
     <string name="go_to_templates">Go to Certificates</string>
