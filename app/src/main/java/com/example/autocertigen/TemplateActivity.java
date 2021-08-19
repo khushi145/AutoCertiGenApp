@@ -46,7 +46,8 @@ public class TemplateActivity extends AppCompatActivity {
     String[][] exceldata = new String[2000][30];
     int name,course,position,society,competition,date,year;
     int row_num;
-    Button go_to;
+    Button go_to, goMain;
+    boolean matchFlag;
     String path,template,signatory1,signatory2,designation1,designation2,sign1Image,sign2Image;
 
     @SuppressLint("SetTextI18n")
@@ -58,6 +59,8 @@ public class TemplateActivity extends AppCompatActivity {
         success = (TextView) findViewById(R.id.success);
         displayPath=(TextView)findViewById(R.id.pdfLoc);
         go_to = (Button) findViewById( R.id.goto_btn );
+        goMain = (Button) findViewById( R.id.main_button );
+        matchFlag=true;
 
         new Thread(()->{
             path = getIntent().getStringExtra("path");
@@ -109,8 +112,17 @@ public class TemplateActivity extends AppCompatActivity {
                 }
             }
         } );
+
+        goMain.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent iMain = new Intent(getApplicationContext(), MainActivity.class );
+                startActivity(iMain);
+            }
+        });
     }
 
+    @SuppressLint("SetTextI18n")
     public void readExcelData1() {
        try {
            InputStream inputfile = getContentResolver().openInputStream(Uri.parse(path));
@@ -130,7 +142,13 @@ public class TemplateActivity extends AppCompatActivity {
            }
            inputfile.close();
            identifyColumn1();
-           genPDF1();
+           if(matchFlag) {
+               genPDF1();
+           }
+           else{
+               success.setText("Please upload another excel file.");
+               displayPath.setText("Columns of the excelsheet don't match the Template placeholders.");
+           }
        } catch (FileNotFoundException e) {
            e.printStackTrace();
        } catch (IOException e) {
@@ -156,7 +174,7 @@ public class TemplateActivity extends AppCompatActivity {
                 society=i;
             }
             else{
-                Toast.makeText(getApplicationContext(),"Columns of the excelsheet don't match the Template placeholders. Please upload another excel file",Toast.LENGTH_LONG).show();
+                matchFlag=false;
             }
         }
     }
@@ -248,6 +266,7 @@ public class TemplateActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     public void readExcelData2() {
         try {
             InputStream inputfile = getContentResolver().openInputStream(Uri.parse(path));
@@ -268,7 +287,13 @@ public class TemplateActivity extends AppCompatActivity {
 
             inputfile.close();
             identifyColumn2();
-            genPDF2();
+            if (matchFlag) {
+                genPDF2();
+            }
+            else{
+                success.setText("Please upload another excel file.");
+                displayPath.setText("Columns of the excelsheet don't match the Template placeholders.");
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -294,8 +319,7 @@ public class TemplateActivity extends AppCompatActivity {
                 date=i;
             }
             else{
-                //add toast here for error msg ("column name don't match template
-                // add another excel sheet")
+                matchFlag=false;
             }
         }
     }
