@@ -30,7 +30,7 @@
         android:layout_height="39dp"
         android:layout_marginTop="16dp"
         android:ems="10"
-
+        android:textColorHint="#4C4B4B"
         android:hint="@string/entries_hint"
         android:importantForAutofill="no"
         android:inputType="number"
