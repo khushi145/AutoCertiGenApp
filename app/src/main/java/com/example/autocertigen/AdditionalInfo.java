@@ -49,7 +49,7 @@ public class AdditionalInfo extends AppCompatActivity {
                 i1.setType("*/*");
                 i1.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
                 startActivityForResult(i1, 2);
-            }
+                }
         });
 
         generate.setOnClickListener( new View.OnClickListener() {
@@ -123,13 +123,13 @@ public class AdditionalInfo extends AppCompatActivity {
             case 1:
                 if (resultCode == RESULT_OK) {
                     path_image1 = data.getData().toString();
-                    Log.d("TAG","path1: "+path_image1);
+                    Toast.makeText(getApplicationContext(),"Image Selected!",Toast.LENGTH_SHORT).show();
                 }
                 break;
             case 2:
                 if (resultCode == RESULT_OK) {
                     path_image2 = data.getData().toString();
-                    Log.d("TAG","path2: "+path_image2);
+                    Toast.makeText(getApplicationContext(),"Image Selected!",Toast.LENGTH_SHORT).show();
                 }
                 break;
 
