@@ -9,60 +9,59 @@
 
     <Button
         android:id="@+id/goto_btn"
-        android:layout_width="194dp"
-        android:layout_height="49dp"
-        android:layout_marginBottom="48dp"
+        android:layout_width="195dp"
+        android:layout_height="50dp"
+        android:textSize="11dp"
         android:backgroundTint="@color/blue_1"
         android:text="GO TO CERTIFICATES"
+        android:textColor="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.953"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_bias="0.465"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.857" />
 
     <Button
         android:id="@+id/main_button"
-        android:layout_width="187dp"
-        android:layout_height="49dp"
-        android:layout_marginBottom="48dp"
-        android:backgroundTint="@color/blue_1"
+        android:layout_width="195dp"
+        android:layout_height="50dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/button_bg"
         android:text="GO TO START"
+        android:textSize="11dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.058"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_bias="0.467"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/goto_btn"
+        app:layout_constraintVertical_bias="0.486" />
 
     <TextView
         android:id="@+id/pdfLoc"
-        android:layout_width="385dp"
-        android:layout_height="141dp"
-        android:layout_marginStart="176dp"
-        android:layout_marginLeft="176dp"
-        android:layout_marginEnd="177dp"
-        android:layout_marginRight="177dp"
-        android:layout_marginBottom="28dp"
+        android:layout_width="380dp"
+        android:layout_height="108dp"
         android:textColor="@color/black"
-        android:textSize="15sp"
+        android:textSize="12sp"
         app:layout_constraintBottom_toTopOf="@+id/goto_btn"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.489"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_bias="0.516"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/success"
+        app:layout_constraintVertical_bias="0.264" />
 
     <TextView
         android:id="@+id/success"
-        android:layout_width="385dp"
-        android:layout_height="112dp"
-        android:layout_marginStart="136dp"
-        android:layout_marginLeft="136dp"
-        android:layout_marginEnd="136dp"
-        android:layout_marginRight="136dp"
-        android:layout_marginBottom="192dp"
-        android:textColor="@color/pink_1"
+        android:layout_width="380dp"
+        android:layout_height="80dp"
         android:text="LOADING..."
-        android:textSize="30sp"
+        android:textColor="@color/pink_1"
+        android:textSize="22sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/goto_btn"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.651" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

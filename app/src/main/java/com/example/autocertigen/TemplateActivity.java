@@ -31,6 +31,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -38,6 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 
 public class TemplateActivity extends AppCompatActivity {
@@ -47,7 +50,7 @@ public class TemplateActivity extends AppCompatActivity {
     int name,course,position,society,competition,date,year;
     int row_num;
     Button go_to, goMain;
-    boolean matchFlag;
+    boolean matchFlag,sizeFlag;
     String path,template,signatory1,signatory2,designation1,designation2,sign1Image,sign2Image;
 
     @SuppressLint("SetTextI18n")
@@ -60,7 +63,7 @@ public class TemplateActivity extends AppCompatActivity {
         displayPath=(TextView)findViewById(R.id.pdfLoc);
         go_to = (Button) findViewById( R.id.goto_btn );
         goMain = (Button) findViewById( R.id.main_button );
-        matchFlag=true;
+        matchFlag=sizeFlag=true;
 
         new Thread(()->{
             path = getIntent().getStringExtra("path");
@@ -117,7 +120,9 @@ public class TemplateActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent iMain = new Intent(getApplicationContext(), MainActivity.class );
+                iMain.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(iMain);
+                TemplateActivity.this.finish();
             }
         });
     }
@@ -131,23 +136,31 @@ public class TemplateActivity extends AppCompatActivity {
            Iterator<Row> rowIterator = sheet.iterator();
            int count = 0;
            String temp;
-           while (rowIterator.hasNext() && count < row_num+1) {
-               Row row = rowIterator.next();
-               Iterator<Cell> cx = row.cellIterator();
-               for (int i=0; i<5; i++){
-                   temp=cx.next().getStringCellValue();
-                   exceldata[count][i]=temp;
+           try {
+               while (rowIterator.hasNext() && count < row_num + 1) {
+                   Row row = rowIterator.next();
+                   Iterator<Cell> cx = row.cellIterator();
+                   for (int i = 0; i < 5; i++) {
+                       temp = cx.next().getStringCellValue();
+                       exceldata[count][i] = temp;
+                   }
+                   count++;
                }
-               count++;
+           }catch(NoSuchElementException e){
+               e.printStackTrace();
+               sizeFlag=false;
+               success.setText("Please upload another excel file.");
+               displayPath.setText("The number of entries in Excel file is less than the number of certificates to be generated.");
            }
            inputfile.close();
-           identifyColumn1();
-           if(matchFlag) {
-               genPDF1();
-           }
-           else{
-               success.setText("Please upload another excel file.");
-               displayPath.setText("Columns of the excelsheet don't match the Template placeholders.");
+           if(sizeFlag) {
+               identifyColumn1();
+               if (matchFlag) {
+                   genPDF1();
+               } else {
+                   success.setText("Please upload another excel file.");
+                   displayPath.setText("Columns of the excelsheet don't match the Template placeholders.");
+               }
            }
        } catch (FileNotFoundException e) {
            e.printStackTrace();
@@ -185,6 +198,7 @@ public class TemplateActivity extends AppCompatActivity {
             PDFBoxResourceLoader.init(getApplicationContext());
             AssetManager assetManager = getAssets();
             for (int i=1; i<row_num+1; i++){
+                success.setText(i-1+"/"+row_num+" FILES GENERATED");
                 InputStream is = assetManager.open("t1.pdf");
                 OutputStream newPDFfile = createFile(exceldata[i][name],i);
                 copy(is, newPDFfile);
@@ -193,7 +207,7 @@ public class TemplateActivity extends AppCompatActivity {
                 Log.d("PATH",PDFfile.getPath());
                 PDDocument pdf = PDDocument.load(PDFfile);
                 PDPage page = pdf.getPage(0);
-                PDPageContentStream contentStream = new PDPageContentStream(pdf, page,true,false);
+                PDPageContentStream contentStream = new PDPageContentStream(pdf, page,true,true);
                 contentStream.transform(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
                 contentStream.beginText();
                 contentStream.setFont(PDType1Font.TIMES_BOLD, 150);
@@ -275,24 +289,31 @@ public class TemplateActivity extends AppCompatActivity {
             Iterator<Row> rowIterator = sheet.iterator();
             int count = 0;
             String temp;
-            while (rowIterator.hasNext() && count < row_num + 1) {
-                Row row = rowIterator.next();
-                Iterator<Cell> cx = row.cellIterator();
-                for (int i = 0; i < 5; i++) {
-                    temp = cx.next().getStringCellValue();
-                    exceldata[count][i] = temp;
+            try {
+                while (rowIterator.hasNext() && count < row_num + 1) {
+                    Row row = rowIterator.next();
+                    Iterator<Cell> cx = row.cellIterator();
+                    for (int i = 0; i < 5; i++) {
+                        temp = cx.next().getStringCellValue();
+                        exceldata[count][i] = temp;
+                    }
+                    count++;
                 }
-                count++;
-            }
-
-            inputfile.close();
-            identifyColumn2();
-            if (matchFlag) {
-                genPDF2();
-            }
-            else{
+            }catch(NoSuchElementException e){
+                e.printStackTrace();
+                sizeFlag=false;
                 success.setText("Please upload another excel file.");
-                displayPath.setText("Columns of the excelsheet don't match the Template placeholders.");
+                displayPath.setText("The number of entries in Excel file is less than the number of certificates to be generated.");
+            }
+            inputfile.close();
+            if(sizeFlag) {
+                identifyColumn2();
+                if (matchFlag) {
+                    genPDF2();
+                } else {
+                    success.setText("Please upload another excel file.");
+                    displayPath.setText("Columns of the excelsheet don't match the Template placeholders.");
+                }
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -331,6 +352,7 @@ public class TemplateActivity extends AppCompatActivity {
             AssetManager assManager = getAssets();
 
             for (int i=1; i<row_num+1; i++){
+                success.setText(i-1+"/"+row_num+" FILES GENERATED");
                 InputStream is = assManager.open("t2.pdf");
                 OutputStream newPDFfile = createFile(exceldata[i][name],i);
                 copy(is, newPDFfile);
