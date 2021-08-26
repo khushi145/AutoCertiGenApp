@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
                 if (resultCode == RESULT_OK) {
                     path_xlsx = data.getData().toString();
                     Intent i = new Intent(getApplicationContext(), ScrollSelectActivity.class );
-                    Log.d("TAG-MAIN","pathExcel: "+path_xlsx);
                     i.putExtra("path", path_xlsx);
                     i.putExtra("entries",entries.getText().toString());
                     startActivity(i);

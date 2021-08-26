@@ -30,9 +30,6 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -45,12 +42,13 @@ import java.util.NoSuchElementException;
 
 public class TemplateActivity extends AppCompatActivity {
 
-    TextView success,displayPath;
+    TextView success,displayPath,timeTaken;
     String[][] exceldata = new String[2000][30];
     int name,course,position,society,competition,date,year;
     int row_num;
+    float startTime,endTime;
     Button go_to, goMain;
-    boolean matchFlag,sizeFlag;
+    boolean matchFlag;
     String path,template,signatory1,signatory2,designation1,designation2,sign1Image,sign2Image;
 
     @SuppressLint("SetTextI18n")
@@ -61,9 +59,10 @@ public class TemplateActivity extends AppCompatActivity {
 
         success = (TextView) findViewById(R.id.success);
         displayPath=(TextView)findViewById(R.id.pdfLoc);
+        timeTaken = (TextView) findViewById(R.id.timeTaken);
         go_to = (Button) findViewById( R.id.goto_btn );
         goMain = (Button) findViewById( R.id.main_button );
-        matchFlag=sizeFlag=true;
+        matchFlag=true;
 
         new Thread(()->{
             path = getIntent().getStringExtra("path");
@@ -75,8 +74,6 @@ public class TemplateActivity extends AppCompatActivity {
             sign1Image=getIntent().getStringExtra("sign1image");
             sign2Image=getIntent().getStringExtra("sign2image");
 
-            Log.d("TAG-TEMPLATE","path1: "+sign1Image);
-            Log.d("TAG-TEMPLATE","path2: "+sign2Image);
 
             try {
                 row_num = Integer.parseInt(getIntent().getStringExtra("entries"));
@@ -84,6 +81,7 @@ public class TemplateActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
+            startTime= System.currentTimeMillis();
             switch (template) {
                 case "t1":
                     readExcelData1();
@@ -129,44 +127,42 @@ public class TemplateActivity extends AppCompatActivity {
 
     @SuppressLint("SetTextI18n")
     public void readExcelData1() {
-       try {
-           InputStream inputfile = getContentResolver().openInputStream(Uri.parse(path));
-           XSSFWorkbook workbook = new XSSFWorkbook(inputfile);
-           XSSFSheet sheet = workbook.getSheetAt(0);
-           Iterator<Row> rowIterator = sheet.iterator();
-           int count = 0;
-           String temp;
-           try {
-               while (rowIterator.hasNext() && count < row_num + 1) {
-                   Row row = rowIterator.next();
-                   Iterator<Cell> cx = row.cellIterator();
-                   for (int i = 0; i < 5; i++) {
-                       temp = cx.next().getStringCellValue();
-                       exceldata[count][i] = temp;
-                   }
-                   count++;
-               }
-           }catch(NoSuchElementException e){
-               e.printStackTrace();
-               sizeFlag=false;
-               success.setText("Please upload another excel file.");
-               displayPath.setText("The number of entries in Excel file is less than the number of certificates to be generated.");
-           }
-           inputfile.close();
-           if(sizeFlag) {
-               identifyColumn1();
-               if (matchFlag) {
-                   genPDF1();
-               } else {
-                   success.setText("Please upload another excel file.");
-                   displayPath.setText("Columns of the excelsheet don't match the Template placeholders.");
-               }
-           }
-       } catch (FileNotFoundException e) {
-           e.printStackTrace();
-       } catch (IOException e) {
-           e.printStackTrace();
-       }
+        try {
+            InputStream inputfile = getContentResolver().openInputStream(Uri.parse(path));
+            XSSFWorkbook workbook = new XSSFWorkbook(inputfile);
+            XSSFSheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> rowIterator = sheet.iterator();
+            int count = 0;
+            String temp;
+            try {
+                while (rowIterator.hasNext() && count < row_num + 1) {
+                    Row row = rowIterator.next();
+                    Iterator<Cell> cx = row.cellIterator();
+                    for (int i = 0; i < 5; i++) {
+                        temp = cx.next().getStringCellValue();
+                        exceldata[count][i] = temp;
+                    }
+                    count++;
+                }
+                inputfile.close();
+                identifyColumn1();
+                if (matchFlag) {
+                    genPDF1();
+                } else {
+                    success.setText("Please upload another excel file.");
+                    displayPath.setText("Columns of the excelsheet don't match the Template placeholders.");
+                }
+            }catch(NoSuchElementException e){
+                e.printStackTrace();
+                inputfile.close();
+                success.setText("Please upload another excel file.");
+                displayPath.setText("The number of entries in Excel file is less than the number of certificates to be generated.");
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void identifyColumn1(){
@@ -272,6 +268,8 @@ public class TemplateActivity extends AppCompatActivity {
                 newPDFfile.close();
                 is.close();
             }
+            endTime=System.currentTimeMillis();
+            timeTaken.setText("Time Taken: "+(endTime-startTime));
             success.setText("Certificate Generation Completed!");
             displayPath.setText("The files are located at the following location in Internal Storage:\n" +
                     "Android/data/com.example.autocertigen/files/Download/AutoCertiGen/");
@@ -299,14 +297,7 @@ public class TemplateActivity extends AppCompatActivity {
                     }
                     count++;
                 }
-            }catch(NoSuchElementException e){
-                e.printStackTrace();
-                sizeFlag=false;
-                success.setText("Please upload another excel file.");
-                displayPath.setText("The number of entries in Excel file is less than the number of certificates to be generated.");
-            }
-            inputfile.close();
-            if(sizeFlag) {
+                inputfile.close();
                 identifyColumn2();
                 if (matchFlag) {
                     genPDF2();
@@ -314,6 +305,11 @@ public class TemplateActivity extends AppCompatActivity {
                     success.setText("Please upload another excel file.");
                     displayPath.setText("Columns of the excelsheet don't match the Template placeholders.");
                 }
+            }catch(NoSuchElementException e){
+                e.printStackTrace();
+                inputfile.close();
+                success.setText("Please upload another excel file.");
+                displayPath.setText("The number of entries in Excel file is less than the number of certificates to be generated.");
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -422,6 +418,8 @@ public class TemplateActivity extends AppCompatActivity {
                 newPDFfile.close();
                 is.close();
             }
+            endTime=System.currentTimeMillis();
+            timeTaken.setText("Time Taken: "+(endTime-startTime));
             success.setText("Certificate Generation Completed!");
             displayPath.setText("The files are located at the following location in Internal Storage:\n" +
                     "Android/data/com.example.autocertigen/files/Download/AutoCertiGen/");
