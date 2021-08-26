@@ -1,7 +1,6 @@
 package com.example.autocertigen;
 
 import android.annotation.SuppressLint;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -15,6 +14,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
@@ -31,8 +31,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -99,7 +97,7 @@ public class TemplateActivity extends AppCompatActivity {
         go_to.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Uri selectedUri = Uri.parse(getExternalFilesDir(Environment.DIRECTORY_PICTURES).getPath());
+                Uri selectedUri = Uri.parse(getFolder());
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setDataAndType(selectedUri,"*/*");
 
@@ -155,6 +153,11 @@ public class TemplateActivity extends AppCompatActivity {
            inputfile.close();
            if(sizeFlag) {
                identifyColumn1();
+               if (count < row_num){
+                   success.setText("Please upload another excel file.");
+                   displayPath.setText("The number of entries in Excel file is less than the number of certificates to be generated.");
+                   throw new IOException();
+               }
                if (matchFlag) {
                    genPDF1();
                } else {
@@ -167,6 +170,7 @@ public class TemplateActivity extends AppCompatActivity {
        } catch (IOException e) {
            e.printStackTrace();
        }
+
     }
 
     public void identifyColumn1(){
@@ -202,7 +206,7 @@ public class TemplateActivity extends AppCompatActivity {
                 InputStream is = assetManager.open("t1.pdf");
                 OutputStream newPDFfile = createFile(exceldata[i][name],i);
                 copy(is, newPDFfile);
-                File PDFfile = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)+"/AutoCertiGen/"+i+"_"+exceldata[i][name]+".pdf");
+                File PDFfile = new File(getFolder()+i+"_"+exceldata[i][name]+".pdf");
                 Log.d("PATH",PDFfile.getAbsolutePath());
                 Log.d("PATH",PDFfile.getPath());
                 PDDocument pdf = PDDocument.load(PDFfile);
@@ -256,13 +260,17 @@ public class TemplateActivity extends AppCompatActivity {
                 contentStream.endText();
                 if(!sign1Image.equals("NULL")) {
                     InputStream ims1 = getContentResolver().openInputStream(Uri.parse(sign1Image));
-                    PDImageXObject pdImage1= LosslessFactory.createFromImage(pdf,BitmapFactory.decodeStream(ims1));
+                    Bitmap original = BitmapFactory.decodeStream(ims1);
+                    Bitmap scaled = Bitmap.createScaledBitmap(original,450,250, false);
+                    PDImageXObject pdImage1= LosslessFactory.createFromImage(pdf,scaled);
                     contentStream.drawImage(pdImage1,400,-2100,450,250);
                     ims1.close();
                 }
                 if(!sign2Image.equals("NULL")) {
                     InputStream ims2 = getContentResolver().openInputStream(Uri.parse(sign2Image));
-                    PDImageXObject pdImage2= LosslessFactory.createFromImage(pdf,BitmapFactory.decodeStream(ims2));
+                    Bitmap original = BitmapFactory.decodeStream(ims2);
+                    Bitmap scaled = Bitmap.createScaledBitmap(original,450,250, false);
+                    PDImageXObject pdImage2= LosslessFactory.createFromImage(pdf,scaled);
                     contentStream.drawImage(pdImage2, 2450, -2100, 450, 250);
                     ims2.close();
                 }
@@ -274,7 +282,7 @@ public class TemplateActivity extends AppCompatActivity {
             }
             success.setText("Certificate Generation Completed!");
             displayPath.setText("The files are located at the following location in Internal Storage:\n" +
-                    "Android/data/com.example.autocertigen/files/Download/AutoCertiGen/");
+                    getFolder());
         }catch (IOException e) {
             e.printStackTrace();
         }
@@ -356,7 +364,7 @@ public class TemplateActivity extends AppCompatActivity {
                 InputStream is = assManager.open("t2.pdf");
                 OutputStream newPDFfile = createFile(exceldata[i][name],i);
                 copy(is, newPDFfile);
-                File PDFfile = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)+"/AutoCertiGen/"+i+"_"+exceldata[i][name]+".pdf");
+                File PDFfile = new File(getFolder()+i+"_"+exceldata[i][name]+".pdf");
                 PDDocument pdf = PDDocument.load(PDFfile);
 
                 PDPage page = pdf.getPage(0);
@@ -424,14 +432,14 @@ public class TemplateActivity extends AppCompatActivity {
             }
             success.setText("Certificate Generation Completed!");
             displayPath.setText("The files are located at the following location in Internal Storage:\n" +
-                    "Android/data/com.example.autocertigen/files/Download/AutoCertiGen/");
+                    getFolder());
         }catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private OutputStream createFile(String name,int i) throws IOException {
-        File f = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)+"/AutoCertiGen/" +i+"_"+name+".pdf");
+        File f = new File(getFolder() + i + "_" + name + ".pdf");
         if (f.exists()){
             f.delete();
         }
@@ -441,6 +449,11 @@ public class TemplateActivity extends AppCompatActivity {
         f.createNewFile();
         OutputStream newFile = new FileOutputStream(f);
         return newFile;
+    }
+
+    @NonNull
+    private String getFolder() {
+        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/AutoCertiGen/";
     }
 
     public static void copy(InputStream fis, OutputStream fos)
