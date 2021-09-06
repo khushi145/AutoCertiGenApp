@@ -170,7 +170,6 @@ public class TemplateActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public void identifyColumn1(){
