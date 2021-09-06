@@ -127,50 +127,49 @@ public class TemplateActivity extends AppCompatActivity {
 
     @SuppressLint("SetTextI18n")
     public void readExcelData1() {
-       try {
-           InputStream inputfile = getContentResolver().openInputStream(Uri.parse(path));
-           XSSFWorkbook workbook = new XSSFWorkbook(inputfile);
-           XSSFSheet sheet = workbook.getSheetAt(0);
-           Iterator<Row> rowIterator = sheet.iterator();
-           int count = 0;
-           String temp;
-           try {
-               while (rowIterator.hasNext() && count < row_num + 1) {
-                   Row row = rowIterator.next();
-                   Iterator<Cell> cx = row.cellIterator();
-                   for (int i = 0; i < 5; i++) {
-                       temp = cx.next().getStringCellValue();
-                       exceldata[count][i] = temp;
-                   }
-                   count++;
-               }
-           }catch(NoSuchElementException e){
-               e.printStackTrace();
-               sizeFlag=false;
-               success.setText("Please upload another excel file.");
-               displayPath.setText("The number of entries in Excel file is less than the number of certificates to be generated.");
-           }
-           inputfile.close();
-           if(sizeFlag) {
-               identifyColumn1();
-               if (count < row_num){
-                   success.setText("Please upload another excel file.");
-                   displayPath.setText("The number of entries in Excel file is less than the number of certificates to be generated.");
-                   throw new IOException();
-               }
-               if (matchFlag) {
-                   genPDF1();
-               } else {
-                   success.setText("Please upload another excel file.");
-                   displayPath.setText("Columns of the excelsheet don't match the Template placeholders.");
-               }
-           }
-       } catch (FileNotFoundException e) {
-           e.printStackTrace();
-       } catch (IOException e) {
-           e.printStackTrace();
-       }
-
+        try {
+            InputStream inputfile = getContentResolver().openInputStream(Uri.parse(path));
+            XSSFWorkbook workbook = new XSSFWorkbook(inputfile);
+            XSSFSheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> rowIterator = sheet.iterator();
+            int count = 0;
+            String temp;
+            try {
+                while (rowIterator.hasNext() && count < row_num + 1) {
+                    Row row = rowIterator.next();
+                    Iterator<Cell> cx = row.cellIterator();
+                    for (int i = 0; i < 5; i++) {
+                        temp = cx.next().getStringCellValue();
+                        exceldata[count][i] = temp;
+                    }
+                    count++;
+                }
+            }catch(NoSuchElementException e){
+                e.printStackTrace();
+                sizeFlag=false;
+                success.setText("Please upload another excel file.");
+                displayPath.setText("The number of entries in Excel file is less than the number of certificates to be generated.");
+            }
+            inputfile.close();
+            if(sizeFlag) {
+                identifyColumn1();
+                if (count < row_num){
+                    success.setText("Please upload another excel file.");
+                    displayPath.setText("The number of entries in Excel file is less than the number of certificates to be generated.");
+                    throw new IOException();
+                }
+                if (matchFlag) {
+                    genPDF1();
+                } else {
+                    success.setText("Please upload another excel file.");
+                    displayPath.setText("Columns of the excelsheet don't match the Template placeholders.");
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void identifyColumn1(){
@@ -316,6 +315,11 @@ public class TemplateActivity extends AppCompatActivity {
             inputfile.close();
             if(sizeFlag) {
                 identifyColumn2();
+                if (count < row_num){
+                    success.setText("Please upload another excel file.");
+                    displayPath.setText("The number of entries in Excel file is less than the number of certificates to be generated.");
+                    throw new IOException();
+                }
                 if (matchFlag) {
                     genPDF2();
                 } else {
@@ -453,7 +457,7 @@ public class TemplateActivity extends AppCompatActivity {
 
     @NonNull
     private String getFolder() {
-        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/AutoCertiGen/";
+        return getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)+"/AutoCertiGen/";
     }
 
     public static void copy(InputStream fis, OutputStream fos)

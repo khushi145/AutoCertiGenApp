@@ -124,12 +124,14 @@ public class AdditionalInfo extends AppCompatActivity {
                 if (resultCode == RESULT_OK) {
                     path_image1 = data.getData().toString();
                     Toast.makeText(getApplicationContext(),"Image Selected!",Toast.LENGTH_SHORT).show();
+                    signImage1.setText("SELECTED");
                 }
                 break;
             case 2:
                 if (resultCode == RESULT_OK) {
                     path_image2 = data.getData().toString();
                     Toast.makeText(getApplicationContext(),"Image Selected!",Toast.LENGTH_SHORT).show();
+                    signImage2.setText("SELECTED");
                 }
                 break;
 
