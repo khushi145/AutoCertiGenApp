@@ -1,7 +1,6 @@
 package com.example.autocertigen;
 
 import android.annotation.SuppressLint;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -15,6 +14,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
@@ -30,6 +30,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -42,13 +43,12 @@ import java.util.NoSuchElementException;
 
 public class TemplateActivity extends AppCompatActivity {
 
-    TextView success,displayPath,timeTaken;
+    TextView success,displayPath;
     String[][] exceldata = new String[2000][30];
     int name,course,position,society,competition,date,year;
     int row_num;
-    float startTime,endTime;
     Button go_to, goMain;
-    boolean matchFlag;
+    boolean matchFlag,sizeFlag;
     String path,template,signatory1,signatory2,designation1,designation2,sign1Image,sign2Image;
 
     @SuppressLint("SetTextI18n")
@@ -59,10 +59,9 @@ public class TemplateActivity extends AppCompatActivity {
 
         success = (TextView) findViewById(R.id.success);
         displayPath=(TextView)findViewById(R.id.pdfLoc);
-        timeTaken = (TextView) findViewById(R.id.timeTaken);
         go_to = (Button) findViewById( R.id.goto_btn );
         goMain = (Button) findViewById( R.id.main_button );
-        matchFlag=true;
+        matchFlag=sizeFlag=true;
 
         new Thread(()->{
             path = getIntent().getStringExtra("path");
@@ -74,6 +73,8 @@ public class TemplateActivity extends AppCompatActivity {
             sign1Image=getIntent().getStringExtra("sign1image");
             sign2Image=getIntent().getStringExtra("sign2image");
 
+            Log.d("TAG-TEMPLATE","path1: "+sign1Image);
+            Log.d("TAG-TEMPLATE","path2: "+sign2Image);
 
             try {
                 row_num = Integer.parseInt(getIntent().getStringExtra("entries"));
@@ -81,7 +82,6 @@ public class TemplateActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            startTime= System.currentTimeMillis();
             switch (template) {
                 case "t1":
                     readExcelData1();
@@ -97,7 +97,7 @@ public class TemplateActivity extends AppCompatActivity {
         go_to.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Uri selectedUri = Uri.parse(getExternalFilesDir(Environment.DIRECTORY_PICTURES).getPath());
+                Uri selectedUri = Uri.parse(getFolder());
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setDataAndType(selectedUri,"*/*");
 
@@ -144,25 +144,33 @@ public class TemplateActivity extends AppCompatActivity {
                     }
                     count++;
                 }
-                inputfile.close();
+            }catch(NoSuchElementException e){
+                e.printStackTrace();
+                sizeFlag=false;
+                success.setText("Please upload another excel file.");
+                displayPath.setText("The number of entries in Excel file is less than the number of certificates to be generated.");
+            }
+            inputfile.close();
+            if(sizeFlag) {
                 identifyColumn1();
+                if (count < row_num){
+                    success.setText("Please upload another excel file.");
+                    displayPath.setText("The number of entries in Excel file is less than the number of certificates to be generated.");
+                    throw new IOException();
+                }
                 if (matchFlag) {
                     genPDF1();
                 } else {
                     success.setText("Please upload another excel file.");
                     displayPath.setText("Columns of the excelsheet don't match the Template placeholders.");
                 }
-            }catch(NoSuchElementException e){
-                e.printStackTrace();
-                inputfile.close();
-                success.setText("Please upload another excel file.");
-                displayPath.setText("The number of entries in Excel file is less than the number of certificates to be generated.");
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     public void identifyColumn1(){
@@ -198,7 +206,7 @@ public class TemplateActivity extends AppCompatActivity {
                 InputStream is = assetManager.open("t1.pdf");
                 OutputStream newPDFfile = createFile(exceldata[i][name],i);
                 copy(is, newPDFfile);
-                File PDFfile = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)+"/AutoCertiGen/"+i+"_"+exceldata[i][name]+".pdf");
+                File PDFfile = new File(getFolder()+i+"_"+exceldata[i][name]+".pdf");
                 Log.d("PATH",PDFfile.getAbsolutePath());
                 Log.d("PATH",PDFfile.getPath());
                 PDDocument pdf = PDDocument.load(PDFfile);
@@ -252,13 +260,17 @@ public class TemplateActivity extends AppCompatActivity {
                 contentStream.endText();
                 if(!sign1Image.equals("NULL")) {
                     InputStream ims1 = getContentResolver().openInputStream(Uri.parse(sign1Image));
-                    PDImageXObject pdImage1= LosslessFactory.createFromImage(pdf,BitmapFactory.decodeStream(ims1));
+                    Bitmap original = BitmapFactory.decodeStream(ims1);
+                    Bitmap scaled = Bitmap.createScaledBitmap(original,450,250, false);
+                    PDImageXObject pdImage1= LosslessFactory.createFromImage(pdf,scaled);
                     contentStream.drawImage(pdImage1,400,-2100,450,250);
                     ims1.close();
                 }
                 if(!sign2Image.equals("NULL")) {
                     InputStream ims2 = getContentResolver().openInputStream(Uri.parse(sign2Image));
-                    PDImageXObject pdImage2= LosslessFactory.createFromImage(pdf,BitmapFactory.decodeStream(ims2));
+                    Bitmap original = BitmapFactory.decodeStream(ims2);
+                    Bitmap scaled = Bitmap.createScaledBitmap(original,450,250, false);
+                    PDImageXObject pdImage2= LosslessFactory.createFromImage(pdf,scaled);
                     contentStream.drawImage(pdImage2, 2450, -2100, 450, 250);
                     ims2.close();
                 }
@@ -268,11 +280,9 @@ public class TemplateActivity extends AppCompatActivity {
                 newPDFfile.close();
                 is.close();
             }
-            endTime=System.currentTimeMillis();
-            timeTaken.setText("Time Taken: "+(endTime-startTime));
             success.setText("Certificate Generation Completed!");
             displayPath.setText("The files are located at the following location in Internal Storage:\n" +
-                    "Android/data/com.example.autocertigen/files/Download/AutoCertiGen/");
+                    getFolder());
         }catch (IOException e) {
             e.printStackTrace();
         }
@@ -297,19 +307,26 @@ public class TemplateActivity extends AppCompatActivity {
                     }
                     count++;
                 }
-                inputfile.close();
+            }catch(NoSuchElementException e){
+                e.printStackTrace();
+                sizeFlag=false;
+                success.setText("Please upload another excel file.");
+                displayPath.setText("The number of entries in Excel file is less than the number of certificates to be generated.");
+            }
+            inputfile.close();
+            if(sizeFlag) {
                 identifyColumn2();
+                if (count < row_num){
+                    success.setText("Please upload another excel file.");
+                    displayPath.setText("The number of entries in Excel file is less than the number of certificates to be generated.");
+                    throw new IOException();
+                }
                 if (matchFlag) {
                     genPDF2();
                 } else {
                     success.setText("Please upload another excel file.");
                     displayPath.setText("Columns of the excelsheet don't match the Template placeholders.");
                 }
-            }catch(NoSuchElementException e){
-                e.printStackTrace();
-                inputfile.close();
-                success.setText("Please upload another excel file.");
-                displayPath.setText("The number of entries in Excel file is less than the number of certificates to be generated.");
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -352,7 +369,7 @@ public class TemplateActivity extends AppCompatActivity {
                 InputStream is = assManager.open("t2.pdf");
                 OutputStream newPDFfile = createFile(exceldata[i][name],i);
                 copy(is, newPDFfile);
-                File PDFfile = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)+"/AutoCertiGen/"+i+"_"+exceldata[i][name]+".pdf");
+                File PDFfile = new File(getFolder()+i+"_"+exceldata[i][name]+".pdf");
                 PDDocument pdf = PDDocument.load(PDFfile);
 
                 PDPage page = pdf.getPage(0);
@@ -418,18 +435,16 @@ public class TemplateActivity extends AppCompatActivity {
                 newPDFfile.close();
                 is.close();
             }
-            endTime=System.currentTimeMillis();
-            timeTaken.setText("Time Taken: "+(endTime-startTime));
             success.setText("Certificate Generation Completed!");
             displayPath.setText("The files are located at the following location in Internal Storage:\n" +
-                    "Android/data/com.example.autocertigen/files/Download/AutoCertiGen/");
+                    getFolder());
         }catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private OutputStream createFile(String name,int i) throws IOException {
-        File f = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)+"/AutoCertiGen/" +i+"_"+name+".pdf");
+        File f = new File(getFolder() + i + "_" + name + ".pdf");
         if (f.exists()){
             f.delete();
         }
@@ -439,6 +454,11 @@ public class TemplateActivity extends AppCompatActivity {
         f.createNewFile();
         OutputStream newFile = new FileOutputStream(f);
         return newFile;
+    }
+
+    @NonNull
+    private String getFolder() {
+        return getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)+"/AutoCertiGen/";
     }
 
     public static void copy(InputStream fis, OutputStream fos)
